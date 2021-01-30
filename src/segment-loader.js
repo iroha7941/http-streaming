@@ -832,7 +832,8 @@ export default class SegmentLoader extends videojs.EventTarget {
     }
 
     const result = {
-      resolvedUri: (storedKey || key).resolvedUri
+      resolvedUri: (storedKey || key).resolvedUri,
+      iv: key.iv
     };
 
     if (storedKey) {
@@ -1910,12 +1911,12 @@ export default class SegmentLoader extends videojs.EventTarget {
       simpleSegment.map = this.initSegmentForMap(simpleSegment.map, true);
       // move over init segment properties to media request
       segmentInfo.segment.map = simpleSegment.map;
+      // if the init segment has a segment key, save that data in the cache
+      this.segmentKey(simpleSegment.map.key, true);
     }
 
     // if this request included a segment key, save that data in the cache
-    if (simpleSegment.key) {
-      this.segmentKey(simpleSegment.key, true);
-    }
+    this.segmentKey(simpleSegment.key, true);
 
     segmentInfo.isFmp4 = simpleSegment.isFmp4;
     segmentInfo.timingInfo = segmentInfo.timingInfo || {};
@@ -2291,18 +2292,14 @@ export default class SegmentLoader extends videojs.EventTarget {
     }
 
     if (segment.key) {
-      // if the media sequence is greater than 2^32, the IV will be incorrect
-      // assuming 10s segments, that would be about 1300 years
-      const iv = segment.key.iv || new Uint32Array([
-        0, 0, 0, segmentInfo.mediaIndex + segmentInfo.playlist.mediaSequence
-      ]);
-
       simpleSegment.key = this.segmentKey(segment.key);
-      simpleSegment.key.iv = iv;
     }
 
     if (segment.map) {
       simpleSegment.map = this.initSegmentForMap(segment.map);
+      if (segment.map.key) {
+        simpleSegment.map.key = this.segmentKey(segment.map.key);
+      }
     }
 
     return simpleSegment;

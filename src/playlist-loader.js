@@ -54,6 +54,9 @@ export const resolveSegmentUris = (segment, baseUri) => {
   if (segment.map && !segment.map.resolvedUri) {
     segment.map.resolvedUri = resolveUrl(baseUri, segment.map.uri);
   }
+  if (segment.map && segment.map.key && !segment.map.key.resolvedUri) {
+    segment.map.key.resolvedUri = resolveUrl(baseUri, segment.map.key.uri);
+  }
 };
 
 /**

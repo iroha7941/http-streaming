@@ -63,6 +63,16 @@ export const createTransferableMessage = function(message) {
 };
 
 /**
+ * Returns a unique string identifier for a media segment key.
+ *
+ * @param {Object} key the encryption key
+ * @return {string} the unique id for the media segment key.
+ */
+export const segmentKeyId = function(key) {
+  return key.resolvedUri;
+};
+
+/**
  * Returns a unique string identifier for a media initialization
  * segment.
  *
@@ -77,19 +87,21 @@ export const initSegmentId = function(initSegment) {
     offset: 0
   };
 
-  return [
-    byterange.length, byterange.offset, initSegment.resolvedUri
-  ].join(',');
-};
+  let keyData = '';
 
-/**
- * Returns a unique string identifier for a media segment key.
- *
- * @param {Object} key the encryption key
- * @return {string} the unique id for the media segment key.
- */
-export const segmentKeyId = function(key) {
-  return key.resolvedUri;
+  if (initSegment.key) {
+    keyData = [
+      initSegment.key.iv[0],
+      initSegment.key.iv[1],
+      initSegment.key.iv[2],
+      initSegment.key.iv[3],
+      segmentKeyId(initSegment.key)
+    ].join(',') + '\n';
+  }
+
+  return [
+    byterange.length, byterange.offset, keyData, initSegment.resolvedUri
+  ].join(',');
 };
 
 /**
